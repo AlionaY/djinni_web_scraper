@@ -2,12 +2,11 @@ import time
 
 import pandas as pd
 from selenium import webdriver
-from selenium.common.exceptions import ElementNotSelectableException, ElementNotVisibleException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support import expected_conditions as EC
-import pandas as pd
 
 
 # collect all job links on each web page
@@ -30,23 +29,22 @@ def open_jobs_list(login, password, job, social_auth_type):
     job_items = add_jobs_to_list(driver, job_header)
     time.sleep(3)
 
-    xpath = '//ul[@class="pagination pagination_with_numbers"]//li[last()]//a'
+    xpath = '//ul[@class="pagination pagination_with_numbers"]//li[last()]//a[not(@aria-disabled)]'
+    wait = WebDriverWait(driver, 5)
 
     while True:
         try:
-            time.sleep(3)
-            next_page_button = driver.find_element(By.XPATH, xpath)
+            next_page_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
             next_page_button.click()
-            time.sleep(3)
             job_items.append(add_jobs_to_list(driver, job_header))
+            time.sleep(3)
             print("header", len(job_header), "items", len(job_items))
-        except NoSuchElementException as err:
+        except Exception as err:
             print(err)
             break
 
     df = pd.DataFrame(job_header, columns=["job_header"])
     print(df.to_markdown())
-    print(job_items)
 
 
 def add_jobs_to_list(driver, job_header):
