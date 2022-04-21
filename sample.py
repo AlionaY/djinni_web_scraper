@@ -2,7 +2,6 @@ import time
 
 import pandas as pd
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
@@ -26,19 +25,18 @@ def open_jobs_list(login, password, job, social_auth_type):
     company_location = []
     company_type = []
 
-    job_items = add_jobs_to_list(driver, job_header)
+    wait = WebDriverWait(driver, 5)
     time.sleep(3)
 
     xpath = '//ul[@class="pagination pagination_with_numbers"]//li[last()]//a[not(@aria-disabled)]'
-    wait = WebDriverWait(driver, 5)
 
     while True:
         try:
             next_page_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
             next_page_button.click()
-            job_items.append(add_jobs_to_list(driver, job_header))
-            time.sleep(3)
-            print("header", len(job_header), "items", len(job_items))
+            add_jobs_to_list(driver, job_header)
+            time.sleep(2)
+            print("header", len(job_header))
         except Exception as err:
             print(err)
             break
@@ -51,8 +49,7 @@ def add_jobs_to_list(driver, job_header):
     job_items = driver.find_elements(By.CLASS_NAME, "profile")
     for item in job_items:
         job_header.append(item.text)
-    time.sleep(3)
-    return job_items
+    time.sleep(2)
 
 
 def open_job_list(driver, job):
@@ -71,11 +68,3 @@ def login_to_djinni(driver, login, password, social_auth_type):
     driver.find_element(By.ID, "password").send_keys(password)
     time.sleep(2)
     driver.find_element(By.XPATH, "//button[@aria-label='Sign in']").click()
-
-
-def check_if_exists_by_xpath(driver, xpath):
-    try:
-        driver.find_element(By.XPATH, xpath)
-    except NoSuchElementException:
-        return False
-    return True
