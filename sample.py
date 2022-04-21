@@ -12,7 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 # open each job description from list (above)
 
 
-def open_jobs_list(login, password, job, social_auth_type):
+def save_job_data(login, password, job, social_auth_type):
     website = 'https://djinni.co/my/dashboard/'
     driver = webdriver.Chrome(ChromeDriverManager().install())
     driver.get(website)
@@ -34,17 +34,38 @@ def open_jobs_list(login, password, job, social_auth_type):
     while True:
         try:
             wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
-            add_jobs_to_list(driver, job_links)
+            save_job_link(driver, job_links)
             time.sleep(2)
-            print("links", len(job_links))
         except Exception as err:
             print(err)
             break
 
+    save_data_to_scv(company_location, company_type, driver, job, job_description, job_header, job_links)
 
-def add_jobs_to_list(driver, job_links):
-    job_list = driver.find_elements(By.XPATH, '//ul[@class="list-unstyled list-jobs"]//a[@href]')
+
+def save_data_to_scv(company_location, company_type, driver, job, job_description, job_header, job_links):
+    for job_name in job_links:
+        try:
+            driver.get(job_name)
+            job_header.append(driver.find_element(By.XPATH, '//div[@class="job-post--title-wrapper"]//h1').text)
+            job_description.append(driver.find_element(By.CLASS_NAME, "profile-page-section").text)
+            company_location.append(driver.find_element(By.CLASS_NAME, "inbox-candidate-details--item-text").text)
+            company_type.append(driver.find_element(By.CLASS_NAME, "inbox-candidate-details--item-inner").text)
+            print(driver.find_element(By.XPATH, '//div[@class="job-post--title-wrapper"]//h1').text)
+        except Exception as err:
+            print(err)
+
+    columns = ['job_header', 'description', 'location', 'company_type']
+    df = pd.DataFrame(list(zip(job_header, job_description, company_location, company_type)), columns=columns)
+    # print(df.to_markdown())
+    path = 'C:/Users/Home/Desktop/ds/djinni_' + job + '_data.csv'
+    df.to_csv(path, index=True)
+
+
+def save_job_link(driver, job_links):
+    job_list = driver.find_elements(By.XPATH, '//div[@class="list-jobs__title"]//a[@class="profile"]')
     for job in job_list:
+        print(job.get_attribute('href'))
         job_links.append(job.get_attribute('href'))
     time.sleep(1)
 
