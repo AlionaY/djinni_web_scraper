@@ -30,7 +30,7 @@ def open_jobs_list(login, password, job, social_auth_type):
     job_items = add_jobs_to_list(driver, job_header)
     time.sleep(3)
 
-    xpath = '//div[@class="col-sm-8 row-mobile-order-2"]//ul[last()]//li[last()]'
+    xpath = '//ul[@class="pagination pagination_with_numbers"]//li[last()]//a'
 
     while True:
         try:
@@ -39,9 +39,6 @@ def open_jobs_list(login, password, job, social_auth_type):
             next_page_button.click()
             time.sleep(3)
             job_items.append(add_jobs_to_list(driver, job_header))
-            time.sleep(3)
-            if 'aria-disabled' in next_page_button.get_attribute('a'):
-                break
             print("header", len(job_header), "items", len(job_items))
         except NoSuchElementException as err:
             print(err)
@@ -49,6 +46,7 @@ def open_jobs_list(login, password, job, social_auth_type):
 
     df = pd.DataFrame(job_header, columns=["job_header"])
     print(df.to_markdown())
+    print(job_items)
 
 
 def add_jobs_to_list(driver, job_header):
