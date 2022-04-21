@@ -25,6 +25,7 @@ def open_jobs_list(login, password, job, social_auth_type):
     job_description = []
     company_location = []
     company_type = []
+    job_links = []
 
     time.sleep(3)
 
@@ -32,23 +33,19 @@ def open_jobs_list(login, password, job, social_auth_type):
 
     while True:
         try:
-            next_page_button = wait.until(EC.element_to_be_clickable((By.XPATH, xpath)))
-            next_page_button.click()
-            add_jobs_to_list(driver, job_header)
+            wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
+            add_jobs_to_list(driver, job_links)
             time.sleep(2)
-            print("header", len(job_header))
+            print("links", len(job_links))
         except Exception as err:
             print(err)
             break
 
-    df = pd.DataFrame(job_header, columns=["job_header"])
-    print(df.to_markdown())
 
-
-def add_jobs_to_list(driver, job_header):
-    job_items = driver.find_elements(By.CLASS_NAME, "profile")
-    for item in job_items:
-        job_header.append(item.text)
+def add_jobs_to_list(driver, job_links):
+    job_list = driver.find_elements(By.XPATH, '//ul[@class="list-unstyled list-jobs"]//a[@href]')
+    for job in job_list:
+        job_links.append(job.get_attribute('href'))
     time.sleep(1)
 
 
