@@ -6,8 +6,8 @@ from sample import save_job_data
 
 if __name__ == '__main__':
     save_job_data(
-        login="aliona_yaroshenko@ukr.net",
-        password="Ldk3pc6h",
+        login="",
+        password="",
         job="data-science",
         social_auth_type="linkedin"
     )
